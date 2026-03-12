@@ -1,0 +1,11 @@
+Email Text,Email Type
+"Dear Customer, your account has been compromised. Please login here to verify: http://evil.com/login",Phishing
+"Hey team, don't forget the meeting tomorrow at 10 AM.",Safe
+"Urgent: You have won a $1000 gift card! Click here to claim your prize.",Phishing
+"Please find the attached invoice for last month's services.",Safe
+"Your bank account needs immediate attention. Verify your identity now.",Phishing
+"Hi Mom, I will be home for dinner tonight.",Safe
+"Exclusive offer! Buy one get one free on all items.",Phishing
+"The updated project presentation is available on the shared drive.",Safe
+"Click this link to reset your password. http://fake-login.com",Phishing
+"Are we still on for lunch today?",Safe

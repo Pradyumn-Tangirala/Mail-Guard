@@ -26,16 +26,23 @@ Connects all layers of the MailGuard threat detection pipeline:
 
 import logging
 import argparse
+import sys
+import os
+
+# ── Ensure project root is in sys.path for robust imports ─────────────────────
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 # ── Layer imports ──────────────────────────────────────────────────────────────
-from preprocessing import parse_raw_email, clean_text, extract_features
+from preprocessing import parse_raw_email, clean_text, extract_features  # type: ignore
 
 # url_analysis: use scan_body() for full structured scan in one call
-from url_analysis import scan_body
+from url_analysis import scan_body  # type: ignore
 
 # header_analysis: use header_threat_score() for weighted composite score,
 # plus the individual check functions for detailed report fields
-from header_analysis import (
+from header_analysis import (  # type: ignore
     parse_headers,
     check_spf,
     check_dkim,
@@ -45,10 +52,10 @@ from header_analysis import (
     header_threat_score,
 )
 
-from models import load_model, run_inference
-from threat_scoring import aggregate_scores, classify_threat, generate_report, ThreatLevel
-from api import create_app, health_check
-from dashboard import launch_dashboard
+from models import load_model, run_inference  # type: ignore
+from threat_scoring import aggregate_scores, classify_threat, generate_report, ThreatLevel  # type: ignore
+from api import create_app, health_check, run as run_api  # type: ignore
+from dashboard import launch_dashboard  # type: ignore
 
 # ── Logging setup ──────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -192,7 +199,7 @@ def main():
     elif args.command == "api":
         app = create_app()
         logger.info(f"Starting MailGuard API on {args.host}:{args.port}")
-        app.run(host=args.host, port=args.port)
+        run_api(host=args.host, port=args.port)
 
     elif args.command == "dashboard":
         logger.info(f"Launching MailGuard Dashboard on {args.host}:{args.port}")

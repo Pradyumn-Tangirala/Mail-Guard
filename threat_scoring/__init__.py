@@ -7,7 +7,7 @@ All real implementation lives in engine.py.
 Import from here — never import directly from engine.py in pipeline code.
 """
 
-from threat_scoring.engine import (
+from .engine import (  # type: ignore
     ThreatLevel,
     aggregate_scores,
     score_to_100,

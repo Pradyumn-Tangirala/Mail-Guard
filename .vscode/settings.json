@@ -1,0 +1,9 @@
+{
+    "python.defaultInterpreterPath": "C:\\Python314\\python.exe",
+    "python.analysis.extraPaths": [
+        "E:\\Projects\\Mail-Guard",
+        "C:\\Users\\Pradyumn Tangirala\\AppData\\Roaming\\Python\\Python314\\site-packages"
+    ],
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.typeCheckingMode": "basic"
+}

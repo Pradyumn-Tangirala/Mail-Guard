@@ -7,7 +7,7 @@ All real implementation lives in scanner.py.
 Import from here — never import directly from scanner.py in pipeline code.
 """
 
-from url_analysis.scanner import (
+from .scanner import (  # type: ignore
     extract_urls,
     is_ip_based_url,
     is_shortened_url,

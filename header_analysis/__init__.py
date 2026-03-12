@@ -7,7 +7,7 @@ All real implementation lives in analyzer.py.
 Import from here — never import directly from analyzer.py in pipeline code.
 """
 
-from header_analysis.analyzer import (
+from .analyzer import (  # type: ignore
     parse_headers,
     check_spf,
     check_dkim,

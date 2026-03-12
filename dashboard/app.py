@@ -25,14 +25,12 @@ import os
 import textwrap
 from datetime import datetime
 
-import streamlit as st
+# ── Ensure project root is in sys.path for robust imports ─────────────────────
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
-# ---------------------------------------------------------------------------
-# Ensure project root is importable
-# ---------------------------------------------------------------------------
-_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _ROOT not in sys.path:
-    sys.path.insert(0, _ROOT)
+import streamlit as st  # type: ignore
 
 # ---------------------------------------------------------------------------
 # Config
@@ -224,7 +222,7 @@ html, body, [data-testid="stAppViewContainer"] {
 def _call_api(raw_email: str) -> dict:
     """POST raw email to the FastAPI /analyze endpoint. Returns report dict."""
     try:
-        import httpx
+        import httpx  # type: ignore
         resp = httpx.post(
             ANALYZE_URL,
             json={"email": raw_email, "email_id": "dashboard-session"},
@@ -235,6 +233,7 @@ def _call_api(raw_email: str) -> dict:
     except ImportError:
         st.error("httpx is not installed. Run: `pip install httpx`")
         st.stop()
+        return {} # Satisfy IDE return path check
     except Exception as exc:
         st.error(f"API call failed: {exc}")
         return {}
@@ -242,7 +241,7 @@ def _call_api(raw_email: str) -> dict:
 
 def _api_online() -> bool:
     try:
-        import httpx
+        import httpx  # type: ignore
         r = httpx.get(HEALTH_URL, timeout=3)
         return r.status_code == 200
     except Exception:
@@ -540,7 +539,7 @@ if st.session_state.history:
     st.markdown("---")
     st.markdown('<div class="mg-card-title">📊 Session Analysis History</div>', unsafe_allow_html=True)
 
-    import pandas as pd
+    import pandas as pd  # type: ignore
     df = pd.DataFrame(st.session_state.history)
     df.columns = ["Time", "Email ID", "Threat Score", "Verdict", "Rules Hit"]
 

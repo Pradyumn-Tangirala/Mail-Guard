@@ -211,7 +211,7 @@ def header_threat_score(headers: dict) -> float:
         + dmarc["score"] * 0.30
         + spoof          * 0.20
     )
-    return round(min(score, 1.0), 4)
+    return float(f"{min(score, 1.0):.4f}")
 
 
 # ===========================================================================
@@ -294,7 +294,7 @@ def _collect_spoofing_flags(headers: dict) -> list:
     if display_match and from_domain:
         display_name = display_match.group(1).strip().lower()
         for brand in _TRUSTED_BRANDS:
-            if brand in display_name and brand not in from_domain:
+            if from_domain is not None and brand in display_name and brand not in str(from_domain):  # type: ignore
                 flags.append(f"display_name_impersonation:{brand}")
                 break   # one flag per email is enough
 

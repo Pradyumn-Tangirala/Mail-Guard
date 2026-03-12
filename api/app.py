@@ -21,11 +21,11 @@ import sys
 import os
 from datetime import datetime, timezone
 
-import uvicorn
-from fastapi import FastAPI, HTTPException, Request, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+import uvicorn  # type: ignore
+from fastapi import FastAPI, HTTPException, Request, status  # type: ignore
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore
+from fastapi.responses import JSONResponse  # type: ignore
+from pydantic import BaseModel, Field  # type: ignore
 
 # ---------------------------------------------------------------------------
 # Ensure project root is on sys.path when run as a module
@@ -199,7 +199,7 @@ def create_app() -> FastAPI:
         confidence = float(proba[1] if pred == 1 else proba[0])
         label      = "Safe Email" if pred == 0 else "Phishing Email"
 
-        return {"prediction": label, "confidence": round(confidence, 4)}
+        return {"prediction": label, "confidence": float(f"{confidence:.4f}")}
 
     return app
 

@@ -8,7 +8,7 @@ This __init__.py re-exports the factory and launcher so that main.py
 can call `from api import create_app` without knowing the submodule name.
 """
 
-from api.app import create_app, run, app
+from .app import create_app, run, app  # type: ignore
 
 def health_check() -> dict:
     """Return API health status. Kept for backward compatibility with main.py."""

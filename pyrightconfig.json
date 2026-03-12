@@ -1,0 +1,14 @@
+{
+    "include": [
+        "."
+    ],
+    "extraPaths": [
+        ".",
+        "C:/Users/Pradyumn Tangirala/AppData/Roaming/Python/Python314/site-packages",
+        "C:/Python314/Lib/site-packages"
+    ],
+    "typeCheckingMode": "basic",
+    "pythonVersion": "3.14",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": false
+}

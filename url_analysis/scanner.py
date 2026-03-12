@@ -201,7 +201,7 @@ def score_url(url: str) -> float:
             logger.debug("Newly registered domain (<30 days): %s", domain)
             score += _SCORE_NEW_DOMAIN
 
-    return round(min(score, 1.0), 4)
+    return float(f"{min(score, 1.0):.4f}")
 
 
 def scan_body(email_body: str) -> dict:
@@ -285,7 +285,7 @@ def _cached_domain_age(domain: str) -> Optional[int]:
     during a single pipeline run or API request burst.
     """
     try:
-        import whois  # python-whois  (pip install python-whois)
+        import whois  # type: ignore  # python-whois  (pip install python-whois)
         w = whois.whois(domain)
         creation_date = w.creation_date
 
