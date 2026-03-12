@@ -16,7 +16,7 @@
 
 ## Overview
 
-MailGuard is a **production-grade email threat detection pipeline** designed to support Security Operations teams. It moves beyond a single ML model by combining three independent analysis layers — natural language processing, URL intelligence, and email authentication forensics — into a single weighted threat score with rule-level explainability.
+MailGuard is a **production-grade email threat detection pipeline** designed to support Security Operations teams. It moves beyond a single ML model by combining three independent analysis layers (natural language processing, URL intelligence, and email authentication forensics) into a single weighted threat score with rule-level explainability.
 
 Every analysis produces a **structured JSON log** aligned with the [Elastic Common Schema (ECS)](https://www.elastic.co/guide/en/ecs/current/index.html), making it directly ingestible by SIEM platforms such as Elasticsearch/Kibana, Splunk Enterprise Security, and Microsoft Sentinel.
 
@@ -93,12 +93,12 @@ Every analysis produces a **structured JSON log** aligned with the [Elastic Comm
 
 | Capability | Details |
 |---|---|
-| **Multi-layer scoring** | NLP (40%), URL (35%), Header (25%) — independently weighted |
+| **Multi-layer scoring** | NLP (40%), URL (35%), Header (25%), independently weighted |
 | **14-rule detection engine** | URL-001–005, HDR-001–005, NLP-001–002, CRIT-001–002 |
 | **Email authentication forensics** | SPF / DKIM / DMARC evaluation from raw headers |
 | **Spoofing detection** | From/Return-Path mismatch, Reply-To hijacking, display-name brand impersonation |
 | **URL intelligence** | IP-based URL detection, shortener recognition, WHOIS domain-age check |
-| **SIEM-ready JSON output** | ECS-aligned schema — plug into Elasticsearch, Splunk, or Sentinel |
+| **SIEM-ready JSON output** | ECS-aligned schema, plug into Elasticsearch, Splunk, or Sentinel |
 | **FastAPI REST layer** | `/analyze` for full pipeline, `/predict` for legacy compatibility |
 | **Streamlit SOC dashboard** | Real-time gauge, rule table, session history, raw JSON viewer |
 
@@ -225,7 +225,7 @@ curl -X POST http://localhost:5000/analyze \
 | `CRIT-001` | Critical | All three layers triggered simultaneously |
 | `CRIT-002` | Critical | Blacklisted URL + spoofing indicators combined |
 
-Rules are evaluated independently. The rule system is **additive and separate from scoring** — new rules can be added at any time without modifying the weight system.
+Rules are evaluated independently. The rule system is **additive and separate from scoring**. New rules can be added at any time without modifying the weight system.
 
 ## JSON Output Format
 
@@ -318,13 +318,13 @@ All threat reports follow a schema aligned with the **[Elastic Common Schema (EC
 |---|---|---|---|
 | `/analyze` | `POST` | `{"email": "<raw eml>", "email_id": "<optional>"}` | Full SIEM threat report |
 | `/predict` | `POST` | `{"email": "<body text>"}` | `{"prediction": "...", "confidence": 0.97}` |
-| `/health` | `GET` | — | `{"status": "ok", "version": "0.2.0"}` |
-| `/version` | `GET` | — | API + Python version strings |
-| `/docs` | `GET` | — | Interactive OpenAPI documentation |
+| `/health` | `GET` | | `{"status": "ok", "version": "0.2.0"}` |
+| `/version` | `GET` | | API + Python version strings |
+| `/docs` | `GET` | | Interactive OpenAPI documentation |
 
 ### Error Responses
 
-All errors return structured JSON — never HTML:
+All errors return structured JSON (never HTML):
 
 ```json
 {
@@ -364,7 +364,7 @@ All errors return structured JSON — never HTML:
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License. See [LICENSE](LICENSE) for details.
 
 <div align="center">
 <sub>Built for security analysts who need more than a binary classifier.</sub>
