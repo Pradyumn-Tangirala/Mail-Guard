@@ -57,10 +57,11 @@ def run_inference(model_bundle: dict, features: dict) -> dict:
     model = model_bundle["model"]
     vectorizer = model_bundle["vectorizer"]
     
-    clean_body = features.get("clean_body", "")
-    
+    from preprocessing import normalize_for_model  # same normalisation as train_model.py
+    model_text = normalize_for_model(features.get("clean_body", ""))
+
     # Vectorize and Predict
-    vec = vectorizer.transform([clean_body])
+    vec = vectorizer.transform([model_text])
     pred = model.predict(vec)[0]
     proba = model.predict_proba(vec)[0] # Usually [safe_prob, phish_prob]
     

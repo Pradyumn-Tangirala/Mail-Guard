@@ -1,0 +1,28 @@
+Return-Path: <bounce-7731@mailer.docshare-notify.test>
+Received: from mailer.docshare-notify.test (mailer.docshare-notify.test [203.0.113.77])
+	by mx.example.com with ESMTPS id 4f9a2c1e
+	for <alex.morgan@example.com>; Tue, 10 Mar 2026 08:14:02 +0000
+Authentication-Results: mx.example.com;
+	spf=softfail (domain of transitioning bounce-7731@mailer.docshare-notify.test does not designate 203.0.113.77 as permitted sender) smtp.mailfrom=mailer.docshare-notify.test;
+	dkim=none
+From: "Shared Documents" <no-reply@docshare-notify.test>
+To: alex.morgan@example.com
+Subject: Alex, a document has been shared with you: Q1_Salary_Review.pdf
+Date: Tue, 10 Mar 2026 08:13:58 +0000
+Message-ID: <20260310081358.7731@docshare-notify.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Hello Alex,
+
+A document has been shared with you and requires your review.
+
+    Q1_Salary_Review.pdf (214 KB)
+
+Open the document here: https://bit.ly/3Qx7Rv2
+
+This link will expire in 48 hours. Sign in with your work email and
+password to view the file.
+
+Document Sharing Service

@@ -1,0 +1,36 @@
+# MailGuard runtime dependencies.
+# Derived from the third-party imports in the source tree (stdlib and local
+# packages excluded). Lower bounds are the versions the project was tested with.
+#
+#   import     package         used by
+#   ---------  --------------  -----------------------------------------------
+#   fastapi    fastapi         api/app.py
+#   uvicorn    uvicorn         api/app.py  (python main.py api)
+#   pydantic   pydantic        api/app.py
+#   streamlit  streamlit       dashboard/app.py
+#   httpx      httpx           dashboard/app.py  (dashboard -> API calls)
+#   pandas     pandas          dashboard/app.py, train_model.py
+#   numpy      numpy           train_model.py
+#   sklearn    scikit-learn    train_model.py, and implicitly at runtime to
+#                              unpickle models/artifacts/*.pkl
+#   whois      python-whois    url_analysis/scanner.py  (domain-age check)
+#   (none)     matplotlib      dashboard/app.py — no direct import, but pandas'
+#                              Styler.background_gradient() imports it lazily
+#
+# NOTE: install "python-whois", not the unrelated PyPI package "whois" — both
+# provide a module called `whois`, but only python-whois has whois.whois().
+
+# Pinned exactly: the committed model artifacts were pickled with 1.8.0 and may
+# not load under other versions. Retrain with train_model.py if you change it.
+# scikit-learn 1.8 requires Python >= 3.11.
+scikit-learn==1.8.0
+
+fastapi>=0.135
+uvicorn>=0.41
+pydantic>=2.12
+streamlit>=1.55
+httpx>=0.28
+pandas>=2.3
+numpy>=2.0
+matplotlib>=3.10
+python-whois>=0.9.6

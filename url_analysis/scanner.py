@@ -13,6 +13,7 @@ All scoring is additive and capped at 1.0.
 WHOIS lookups are performed lazily and cached per domain within a scan session.
 """
 
+import ipaddress
 import re
 import logging
 from datetime import datetime, timezone
@@ -30,12 +31,6 @@ logger = logging.getLogger(__name__)
 _URL_RE = re.compile(
     r"https?://"
     r"(?:[a-zA-Z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+)",
-    re.IGNORECASE,
-)
-
-# IP-address host in URL (IPv4 only; IPv6 in URLs is rare in email).
-_IP_HOST_RE = re.compile(
-    r"^https?://(\d{1,3}\.){3}\d{1,3}(?:[:/]|$)",
     re.IGNORECASE,
 )
 
@@ -86,13 +81,25 @@ def extract_urls(email_body: str) -> list:
 
 def is_ip_based_url(url: str) -> bool:
     """
-    Return True if the URL uses a bare IPv4 address instead of a hostname.
+    Return True if the URL's host is a bare IPv4 or IPv6 address.
+
+    The host is taken from the parsed URL, so userinfo tricks are handled:
+    in http://paypal.com@1.2.3.4/login the real host is 1.2.3.4.
 
     Examples flagged:
       http://192.168.1.1/login
       https://203.0.113.5:8080/track?id=123
+      http://paypal.com@1.2.3.4/login
+      http://[2001:db8::1]/login
     """
-    return bool(_IP_HOST_RE.match(url))
+    host = _get_hostname(url)
+    if not host:
+        return False
+    try:
+        ipaddress.ip_address(host)
+        return True
+    except ValueError:
+        return False
 
 
 def is_shortened_url(url: str) -> bool:
@@ -262,18 +269,23 @@ def scan_body(email_body: str) -> dict:
 # PRIVATE HELPERS
 # ===========================================================================
 
-def _get_bare_domain(url: str) -> Optional[str]:
-    """Parse and return the lowercase bare hostname from a URL."""
+def _get_hostname(url: str) -> Optional[str]:
+    """
+    Return the URL's real host: lowercased, without userinfo or port.
+
+    urlparse().hostname handles 'user@host', 'host:8080' and IPv6 '[::1]'.
+    Malformed URLs (e.g. an unclosed '[') return None.
+    """
     try:
-        netloc = urlparse(url).netloc.lower()
-        if not netloc:
-            return None
-        # Strip port number (e.g. example.com:8080 → example.com)
-        netloc = netloc.split(":")[0]
-        # Strip www. prefix for normalisation
-        return netloc.lstrip("www.") or None
-    except Exception:
+        return urlparse(url).hostname or None
+    except ValueError:
         return None
+
+
+def _get_bare_domain(url: str) -> Optional[str]:
+    """Return the host with a leading 'www.' removed (e.g. www.web.com → web.com)."""
+    host = _get_hostname(url)
+    return host.removeprefix("www.") if host else None
 
 
 @lru_cache(maxsize=256)
@@ -286,7 +298,16 @@ def _cached_domain_age(domain: str) -> Optional[int]:
     """
     try:
         import whois  # type: ignore  # python-whois  (pip install python-whois)
-        w = whois.whois(domain)
+        import socket
+        
+        # Set a brief timeout so unresponsive WHOIS servers don't hang the API
+        old_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(3.0)
+        try:
+            w = whois.whois(domain)
+        finally:
+            socket.setdefaulttimeout(old_timeout)
+            
         creation_date = w.creation_date
 
         # WHOIS libraries sometimes return a list of dates

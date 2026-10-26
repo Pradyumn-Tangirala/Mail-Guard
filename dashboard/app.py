@@ -35,7 +35,7 @@ import streamlit as st  # type: ignore
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-API_BASE = os.getenv("MAILGUARD_API_URL", "http://localhost:5000")
+API_BASE = os.getenv("MAILGUARD_API_URL", "http://localhost:8000")
 ANALYZE_URL = f"{API_BASE}/analyze"
 HEALTH_URL  = f"{API_BASE}/health"
 
@@ -347,7 +347,7 @@ st.markdown("""
   <div class="mg-header-logo">🛡️</div>
   <div>
     <div class="mg-header-title">MailGuard — Threat Detection Dashboard</div>
-    <div class="mg-header-sub">SOC-grade email analysis · Header · URL · NLP · SIEM-ready output</div>
+    <div class="mg-header-sub">Prototype phishing analysis · Header · URL · NLP · ECS-style JSON output</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -387,7 +387,7 @@ if analyze_btn:
         with col_results:
             st.error(
                 f"MailGuard API is not reachable at **{API_BASE}**.\n\n"
-                "Start it with:\n```\npython main.py api --port 5000\n```"
+                "Start it with:\n```\npython main.py api --port 8000\n```"
             )
     else:
         with st.spinner("Analyzing…"):
@@ -553,7 +553,7 @@ if st.session_state.history:
         return colors.get(v, "")
 
     st.dataframe(
-        df.style.applymap(_style_verdict, subset=["Verdict"])
+        df.style.map(_style_verdict, subset=["Verdict"])
                .background_gradient(subset=["Threat Score"], cmap="RdYlGn_r"),
         use_container_width=True,
         hide_index=True,

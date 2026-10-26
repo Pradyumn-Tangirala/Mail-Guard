@@ -1,0 +1,18 @@
+From: "PayPal Support" <billing@evil-domain.com>
+Return-Path: <noreply@phish.net>
+Reply-To: attacker@gmail.com
+Subject: Urgent: Verify your account immediately
+Authentication-Results: mx.google.com; spf=fail; dkim=fail
+Message-ID: <phish-20260312@phish.net>
+
+Dear Customer,
+
+We have detected suspicious login activity on your PayPal account.
+Please verify your identity immediately by clicking the link below:
+
+http://192.168.1.100/paypal/verify?token=abc123
+Alternatively use: https://bit.ly/3xYzPhish
+
+Failure to verify within 24 hours will result in account suspension.
+
+PayPal Security Team

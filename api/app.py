@@ -11,9 +11,9 @@ Endpoints
   GET  /version   — Package + model version info
 
 Run with:
-  uvicorn api.app:app --host 0.0.0.0 --port 5000 --reload
+  uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
 Or via main.py CLI:
-  python main.py api --port 5000
+  python main.py api --port 8000
 """
 
 import logging
@@ -40,15 +40,22 @@ logger = logging.getLogger("mailguard.api")
 # Request / Response schemas
 # ---------------------------------------------------------------------------
 
+# Upper bound on submitted email size (~1 MB of text). Oversized input is
+# rejected with 422 before any parsing, so one request cannot tie up the server.
+MAX_EMAIL_CHARS = 1_000_000
+
+
 class AnalyzeRequest(BaseModel):
     email: str = Field(
         ...,
         min_length=10,
+        max_length=MAX_EMAIL_CHARS,
         description="Raw email text (full .eml format, including headers and body).",
         examples=["From: sender@example.com\r\nSubject: Hello\r\n\r\nBody text here."],
     )
     email_id: str = Field(
         default="",
+        max_length=256,
         description="Optional caller-supplied email identifier (e.g. Message-ID). "
                     "Auto-generated UUID if omitted.",
     )
@@ -56,7 +63,13 @@ class AnalyzeRequest(BaseModel):
 
 class PredictRequest(BaseModel):
     """Legacy schema — kept for backward compatibility with existing frontend."""
-    email: str = Field(..., min_length=1, description="Email body text.")
+    email: str = Field(..., min_length=1, max_length=MAX_EMAIL_CHARS, description="Email body text.")
+
+
+def _cors_origins() -> list:
+    """Allowed browser origins, from MAILGUARD_CORS_ORIGINS (comma-separated)."""
+    raw = os.getenv("MAILGUARD_CORS_ORIGINS", "http://localhost:8501")
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
 # ---------------------------------------------------------------------------
@@ -69,33 +82,41 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="MailGuard Threat Detection API",
         description=(
-            "SOC-grade email threat detection pipeline. "
-            "Accepts raw .eml text and returns a structured SIEM-ready threat report."
+            "Prototype email phishing detection pipeline. "
+            "Accepts raw .eml text and returns an ECS-style JSON threat report."
         ),
         version="0.2.0",
         docs_url="/docs",
         redoc_url="/redoc",
     )
 
-    # ── CORS (allow dashboard origin in dev; tighten in production) ────────────
+    # ── CORS: only listed browser origins; no cookies/credentials ──────────────
+    # The Streamlit dashboard calls the API server-side (httpx), so CORS does
+    # not affect it; this only governs JavaScript running in a browser.
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
+        allow_origins=_cors_origins(),
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
     # ── Global exception handler (returns structured JSON, never HTML) ─────────
+    # Exception details are logged server-side only. The client gets a generic
+    # message plus a request id it can quote, so internal paths, library
+    # versions or input fragments are never echoed back.
     @app.exception_handler(Exception)
     async def _global_error(request: Request, exc: Exception):
-        logger.exception("Unhandled error on %s %s", request.method, request.url)
+        import uuid
+        request_id = str(uuid.uuid4())
+        logger.exception("Unhandled error [request_id=%s] on %s %s",
+                         request_id, request.method, request.url.path)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
-                "error": type(exc).__name__,
-                "detail": str(exc),
-                "path": str(request.url),
+                "error": "Internal server error",
+                "request_id": request_id,
+                "path": request.url.path,
                 "timestamp": datetime.now(tz=timezone.utc).isoformat(),
             },
         )
@@ -111,10 +132,6 @@ def create_app() -> FastAPI:
         artifacts = pathlib.Path(_PROJECT_ROOT) / "models" / "artifacts"
         model_path = artifacts / "model.pkl"
         vec_path   = artifacts / "vectorizer.pkl"
-        # Fall back to old backend/ location if artifacts/ not yet populated
-        if not model_path.exists():
-            model_path = pathlib.Path(_PROJECT_ROOT) / "backend" / "model.pkl"
-            vec_path   = pathlib.Path(_PROJECT_ROOT) / "backend" / "vectorizer.pkl"
         with open(model_path, "rb") as f:
             model = pickle.load(f)
         with open(vec_path, "rb") as f:
@@ -180,7 +197,7 @@ def create_app() -> FastAPI:
     @app.post("/predict", tags=["Legacy"], summary="Simple phishing/safe prediction")
     async def predict(req: PredictRequest):
         """
-        Backward-compatible endpoint for the existing React frontend.
+        Backward-compatible endpoint for the legacy HTML frontend (frontend/index.html).
 
         Returns:
             {"prediction": "Safe Email" | "Phishing Email", "confidence": float}
@@ -193,7 +210,8 @@ def create_app() -> FastAPI:
                 detail=f"Model not found: {exc}. Run train_model.py first.",
             )
 
-        vec        = vectorizer.transform([req.email])
+        from preprocessing import clean_text, normalize_for_model  # match training
+        vec        = vectorizer.transform([normalize_for_model(clean_text(req.email))])
         pred       = model.predict(vec)[0]
         proba      = model.predict_proba(vec)[0]
         confidence = float(proba[1] if pred == 1 else proba[0])
@@ -213,7 +231,7 @@ app = create_app()
 # ---------------------------------------------------------------------------
 # Programmatic launcher (called by main.py CLI)
 # ---------------------------------------------------------------------------
-def run(host: str = "0.0.0.0", port: int = 5000, reload: bool = False):
+def run(host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
     """Start the uvicorn server programmatically."""
     uvicorn.run(
         "api.app:app",

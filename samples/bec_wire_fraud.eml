@@ -1,0 +1,34 @@
+Return-Path: <d.reyes@northwind-traders.test>
+Received: from mail.northwind-traders.test (mail.northwind-traders.test [198.51.100.41])
+	by mx.northwindtraders.example with ESMTPS id 7b21e0aa
+	for <finance@northwindtraders.example>; Thu, 12 Mar 2026 16:47:19 +0000
+Authentication-Results: mx.northwindtraders.example;
+	spf=pass (domain of d.reyes@northwind-traders.test designates 198.51.100.41 as permitted sender) smtp.mailfrom=northwind-traders.test;
+	dkim=pass header.d=northwind-traders.test
+From: "Daniel Reyes" <d.reyes@northwind-traders.test>
+Reply-To: daniel.reyes.ceo@freemail.test
+To: finance@northwindtraders.example
+Subject: Urgent wire transfer - confidential
+Date: Thu, 12 Mar 2026 16:47:11 +0000
+Message-ID: <CAF8x2k9Lq@mail.northwind-traders.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Hi,
+
+Are you at your desk? I need you to process an urgent wire transfer today
+for a confidential acquisition we are closing. Please keep this between us
+until the announcement.
+
+Amount: USD 48,750.00
+Beneficiary: Halden Consulting Ltd
+I will send the bank details once you confirm.
+
+I am in meetings all afternoon so reply by email only, do not call.
+
+Thanks,
+Daniel Reyes
+Chief Executive Officer
+
+Sent from my iPhone

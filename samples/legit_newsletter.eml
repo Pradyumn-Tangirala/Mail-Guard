@@ -1,0 +1,51 @@
+Return-Path: <bounces+1029@news.example.org>
+Received: from out-12.news.example.org (out-12.news.example.org [203.0.113.12])
+	by mx.example.com with ESMTPS id c3d8e1f2
+	for <sam.patel@example.com>; Wed, 11 Mar 2026 14:00:07 +0000
+Authentication-Results: mx.example.com;
+	spf=pass (domain of bounces+1029@news.example.org designates 203.0.113.12 as permitted sender) smtp.mailfrom=news.example.org;
+	dkim=pass header.d=example.org;
+	dmarc=pass header.from=example.org
+From: "Example Engineering Blog" <newsletter@example.org>
+To: sam.patel@example.com
+Subject: This month on the Engineering Blog: scaling our build pipeline
+Date: Wed, 11 Mar 2026 14:00:02 +0000
+Message-ID: <newsletter-2026-03.1029@news.example.org>
+List-Unsubscribe: <https://example.org/unsubscribe?id=1029>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="nl_0042"
+
+--nl_0042
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Hi Sam,
+
+Here is what we published this month:
+
+- Scaling our build pipeline to 2,000 jobs a day
+  https://example.org/blog/scaling-build-pipeline
+- Lessons from migrating our database to a new region
+  https://example.org/blog/database-migration
+
+You are receiving this because you subscribed to the Example Engineering
+Blog. Unsubscribe: https://example.org/unsubscribe?id=1029
+
+--nl_0042
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <body>
+    <p>Hi Sam,</p>
+    <p>Here is what we published this month:</p>
+    <ul>
+      <li><a href="https://example.org/blog/scaling-build-pipeline">Scaling our build pipeline to 2,000 jobs a day</a></li>
+      <li><a href="https://example.org/blog/database-migration">Lessons from migrating our database to a new region</a></li>
+    </ul>
+    <p style="font-size:11px;">You are receiving this because you subscribed.
+       <a href="https://example.org/unsubscribe?id=1029">Unsubscribe</a></p>
+  </body>
+</html>
+
+--nl_0042--

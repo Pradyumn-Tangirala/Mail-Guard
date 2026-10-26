@@ -35,7 +35,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 # ── Layer imports ──────────────────────────────────────────────────────────────
-from preprocessing import parse_raw_email, clean_text, extract_features  # type: ignore
+from preprocessing import parse_raw_email, extract_features  # type: ignore
 
 # url_analysis: use scan_body() for full structured scan in one call
 from url_analysis import scan_body  # type: ignore
@@ -83,15 +83,16 @@ def run_pipeline(raw_email: str, email_id: str = "unknown") -> dict:
     # ── Stage 1: Preprocessing ─────────────────────────────────────────────────
     logger.info(f"[{email_id}] Stage 1 — Preprocessing")
     parsed       = parse_raw_email(raw_email)
-    clean_body   = clean_text(parsed.get("body", ""))
-    nlp_features = extract_features(parsed)
+    nlp_features = extract_features(parsed)   # NLP input: tag-stripped body text
 
     # ── Stage 2: URL Analysis ──────────────────────────────────────────────────
     # scan_body() returns a rich dict:
     #   urls_found, ip_based, shortened, newly_registered, blacklisted,
     #   url_scores {url: float}, max_score
+    # Scan the RAW body, not the tag-stripped text: in HTML mail the real link
+    # target often exists only inside <a href="...">, which clean_text() removes.
     logger.info(f"[{email_id}] Stage 2 — URL Analysis")
-    url_scan   = scan_body(clean_body)
+    url_scan   = scan_body(parsed.get("body", ""))
     url_signal = url_scan["max_score"]
 
     if url_scan["ip_based"]:
@@ -176,7 +177,7 @@ def main():
     # Start the REST API server
     api_parser = subparsers.add_parser("api", help="Start the MailGuard REST API server.")
     api_parser.add_argument("--host", default="0.0.0.0")
-    api_parser.add_argument("--port", type=int, default=5000)
+    api_parser.add_argument("--port", type=int, default=8000)
 
     # Start the monitoring dashboard
     dash_parser = subparsers.add_parser("dashboard", help="Launch the real-time monitoring dashboard.")

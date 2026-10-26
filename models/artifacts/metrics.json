@@ -1,0 +1,160 @@
+{
+  "trained_at": "2026-10-25T15:04:49+00:00",
+  "sklearn_version": "1.8.0",
+  "dataset": {
+    "source": "Champa et al., Phishing Email Curated Datasets, Zenodo, DOI 10.5281/zenodo.8339691 (CC BY 4.0)",
+    "train_test_file": "Nazario_5.csv",
+    "n_emails": 3012,
+    "n_phishing": 1518,
+    "n_legitimate": 1494,
+    "n_train": 2409,
+    "n_test": 603,
+    "split": "stratified 80/20, random_state=42"
+  },
+  "selected_model": "logistic_regression",
+  "selection": "highest mean 5-fold CV F1 on the train split",
+  "cv_train_split": {
+    "logistic_regression": {
+      "f1": {
+        "mean": 0.983,
+        "std": 0.0047
+      },
+      "precision": {
+        "mean": 0.9908,
+        "std": 0.0055
+      },
+      "recall": {
+        "mean": 0.9753,
+        "std": 0.0069
+      },
+      "roc_auc": {
+        "mean": 0.9973,
+        "std": 0.0028
+      }
+    },
+    "gradient_boosting": {
+      "f1": {
+        "mean": 0.9449,
+        "std": 0.0109
+      },
+      "precision": {
+        "mean": 0.9642,
+        "std": 0.0093
+      },
+      "recall": {
+        "mean": 0.9267,
+        "std": 0.0236
+      },
+      "roc_auc": {
+        "mean": 0.9897,
+        "std": 0.0034
+      }
+    }
+  },
+  "test_split": {
+    "logistic_regression": {
+      "n": 603,
+      "accuracy": 0.9818,
+      "precision": 0.9933,
+      "recall": 0.9704,
+      "f1": 0.9817,
+      "false_positive_rate": 0.0067,
+      "roc_auc": 0.9993,
+      "confusion_matrix": {
+        "tn": 297,
+        "fp": 2,
+        "fn": 9,
+        "tp": 295
+      }
+    },
+    "gradient_boosting": {
+      "n": 603,
+      "accuracy": 0.9436,
+      "precision": 0.972,
+      "recall": 0.9145,
+      "f1": 0.9424,
+      "false_positive_rate": 0.0268,
+      "roc_auc": 0.9897,
+      "confusion_matrix": {
+        "tn": 291,
+        "fp": 8,
+        "fn": 26,
+        "tp": 278
+      }
+    }
+  },
+  "cross_dataset": {
+    "file": "Nigerian_5.csv",
+    "overlapping_rows_removed": 1464,
+    "metrics": {
+      "n": 4758,
+      "accuracy": 0.5704,
+      "precision": 0.9877,
+      "recall": 0.3728,
+      "f1": 0.5413,
+      "false_positive_rate": 0.0098,
+      "roc_auc": 0.9623,
+      "confusion_matrix": {
+        "tn": 1508,
+        "fp": 15,
+        "fn": 2029,
+        "tp": 1206
+      }
+    }
+  },
+  "leakage_ablation": {
+    "note": "logistic_regression CV F1 without masking corpus-identifying tokens (jose / monkey.org / enron), year masking, or URL/email-address tokenisation",
+    "cv_f1_unmasked": {
+      "mean": 0.9838,
+      "std": 0.0057
+    },
+    "cv_f1_masked": {
+      "mean": 0.983,
+      "std": 0.0047
+    }
+  },
+  "top_features": {
+    "phishing": [
+      "account",
+      "click",
+      "dear",
+      "email",
+      "update",
+      "verify",
+      "security",
+      "view",
+      "payment",
+      "emailtoken",
+      "mailbox",
+      "kindly",
+      "messages",
+      "upgrade",
+      "link"
+    ],
+    "legitimate": [
+      "list",
+      "wrote",
+      "urltoken",
+      "like",
+      "plan",
+      "just",
+      "subject",
+      "july",
+      "know",
+      "mailing",
+      "mailing list",
+      "emailtoken urltoken",
+      "time",
+      "original",
+      "unsubscribe"
+    ]
+  },
+  "vectorizer": {
+    "vocabulary_size": 20000,
+    "ngram_range": [
+      1,
+      2
+    ],
+    "max_features": 20000
+  }
+}

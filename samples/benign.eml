@@ -1,0 +1,14 @@
+From: "Priya Sharma" <priya@example.com>
+Return-Path: <priya@example.com>
+To: team@example.com
+Subject: Agenda for tomorrow's meeting
+Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com
+Message-ID: <agenda-20260312@example.com>
+
+Hi team,
+
+Don't forget the meeting tomorrow at 10 AM. The updated project
+presentation is on the shared drive.
+
+Thanks,
+Priya

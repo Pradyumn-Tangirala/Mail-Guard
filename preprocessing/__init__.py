@@ -66,6 +66,34 @@ def extract_features(parsed_email: dict) -> dict:
         "has_attachments": False, # Basic placeholder
     }
 
+_EMAIL_ADDR_RE = re.compile(r"\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b")
+_URL_TEXT_RE   = re.compile(r"(?:https?://|www\.)\S+", re.IGNORECASE)
+# Tokens that identify the *source corpus* rather than phishing behaviour.
+# The Nazario corpus was collected in a single inbox (jose@monkey.org), and the
+# legitimate side is dominated by Enron mail; without masking, a classifier
+# learns "mentions jose → phishing" instead of anything useful.
+_CORPUS_TOKEN_RE = re.compile(r"\b(?:jose|monkey(?:\.org)?|enron(?:\.com)?)\b", re.IGNORECASE)
+# Legitimate training mail is from 1992–2008 and phishing from 2015–2022, so
+# literal years let the model date an email instead of judging its content.
+_YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
+
+
+def normalize_for_model(text: str) -> str:
+    """
+    Prepare cleaned body text for the NLP classifier (used in training AND inference).
+
+    - URLs → "urltoken" and email addresses → "emailtoken" (the URL / header
+      layers analyse those separately; the model should learn wording, not hosts)
+    - Years → "yeartoken" (the training corpora are separated by era)
+    - Removes corpus-identifying tokens that would leak the label
+    """
+    text = _URL_TEXT_RE.sub(" urltoken ", text)
+    text = _EMAIL_ADDR_RE.sub(" emailtoken ", text)
+    text = _CORPUS_TOKEN_RE.sub(" ", text)
+    text = _YEAR_RE.sub(" yeartoken ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def tokenize(text: str) -> list:
     """Tokenize cleaned text into a list of tokens."""
     return text.lower().split()

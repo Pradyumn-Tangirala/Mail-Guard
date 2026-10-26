@@ -45,6 +45,7 @@ def parse_headers(raw_email: str) -> dict:
             "received":     list[str],
             "spf_raw":      str,   # e.g. "spf=pass" or "spf=not_found"
             "dkim_raw":     str,   # e.g. "dkim=fail" or "dkim=not_found"
+            "dkim_domain":  str,   # DKIM signing domain (d=), "" if unknown
             "subject":      str,
             "message_id":   str,
         }
@@ -66,6 +67,7 @@ def parse_headers(raw_email: str) -> dict:
         "received":    msg.get_all("Received") or [],
         "spf_raw":     _extract_spf(msg),
         "dkim_raw":    _extract_dkim(msg),
+        "dkim_domain": _extract_dkim_domain(msg),
         "subject":     msg.get("Subject", ""),
         "message_id":  msg.get("Message-ID", ""),
     }
@@ -124,33 +126,36 @@ def check_dmarc(headers: dict) -> dict:
     """
     Derive a DMARC-style assessment from SPF + DKIM results and domain alignment.
 
-    Real DMARC requires querying the DNS TXT record for _dmarc.<domain>.
-    This function performs an *identifier alignment* check as a local approximation:
-    - SPF must pass AND From-domain must match Return-Path domain (aligned SPF), OR
-    - DKIM must pass AND From-domain must match the d= tag in the DKIM-Signature.
+    Real DMARC also requires querying the DNS TXT record for _dmarc.<domain>
+    (the published policy); this function does NOT do that. It performs a local
+    *identifier alignment* check only. DMARC passes if EITHER:
+    - SPF passed AND the Return-Path domain aligns with the From domain, OR
+    - DKIM passed AND the DKIM signing domain (d=) aligns with the From domain.
+
+    "Aligned" is relaxed: the same domain, or one is a subdomain of the other
+    (mail.paypal.com aligns with paypal.com). This is a simplification of real
+    relaxed alignment, which compares organisational domains via the Public
+    Suffix List.
 
     Returns:
-        {"passed": bool, "aligned": bool, "from_domain": str,
-         "return_path_domain": str, "score": float}
+        {"passed": bool, "aligned": bool, "dkim_aligned": bool,
+         "from_domain": str, "return_path_domain": str, "dkim_domain": str,
+         "score": float}
+        "aligned" is the From / Return-Path (SPF) alignment used by rule HDR-003.
     """
     spf   = check_spf(headers)
     dkim  = check_dkim(headers)
 
     from_domain        = _extract_domain(headers.get("from", ""))
     return_path_domain = _extract_domain(headers.get("return_path", ""))
+    dkim_domain        = (headers.get("dkim_domain") or "").lower() or None
 
-    # Domain alignment: From must match Return-Path (SPF alignment, relaxed)
-    aligned = bool(
-        from_domain
-        and return_path_domain
-        and (
-            from_domain == return_path_domain
-            or from_domain.endswith("." + return_path_domain)
-            or return_path_domain.endswith("." + from_domain)
-        )
-    )
+    aligned      = _domains_aligned(from_domain, return_path_domain)   # SPF alignment
+    dkim_aligned = _domains_aligned(from_domain, dkim_domain)          # DKIM alignment
 
-    passed = (spf["passed"] and aligned) or dkim["passed"]
+    # A DKIM pass only counts if the signing domain aligns with From:
+    # anyone can validly sign mail as d=evil.com while showing From: paypal.com.
+    passed = (spf["passed"] and aligned) or (dkim["passed"] and dkim_aligned)
 
     if passed:
         score = 0.0
@@ -162,8 +167,10 @@ def check_dmarc(headers: dict) -> dict:
     return {
         "passed":              passed,
         "aligned":             aligned,
+        "dkim_aligned":        dkim_aligned,
         "from_domain":         from_domain or "",
         "return_path_domain":  return_path_domain or "",
+        "dkim_domain":         dkim_domain or "",
         "score":               score,
     }
 
@@ -222,7 +229,7 @@ def _empty_headers() -> dict:
     return {
         "from": "", "return_path": "", "reply_to": "",
         "received": [], "spf_raw": "spf=not_found",
-        "dkim_raw": "dkim=not_found", "subject": "", "message_id": "",
+        "dkim_raw": "dkim=not_found", "dkim_domain": "", "subject": "", "message_id": "",
     }
 
 
@@ -262,6 +269,31 @@ def _extract_dkim(msg) -> str:
     if msg.get("DKIM-Signature"):
         return "dkim=present_unverified"
     return "dkim=not_found"
+
+
+def _extract_dkim_domain(msg) -> str:
+    """
+    Pull the DKIM signing domain (d=).
+
+    Prefers Authentication-Results "header.d=" (the receiving server's verified
+    result, taking the passing signature if there are several), then falls back
+    to the d= tag of the DKIM-Signature header (unverified).
+    """
+    auth = msg.get("Authentication-Results", "") or ""
+    m = (re.search(r"dkim=pass\b[^;]*?header\.d=([\w.-]+)", auth, re.IGNORECASE)
+         or re.search(r"header\.d=([\w.-]+)", auth, re.IGNORECASE))
+    if m:
+        return m.group(1).lower()
+    sig = msg.get("DKIM-Signature", "") or ""
+    m = re.search(r"(?:^|;)\s*d=([\w.-]+)", sig)
+    return m.group(1).lower() if m else ""
+
+
+def _domains_aligned(a: Optional[str], b: Optional[str]) -> bool:
+    """Relaxed alignment: same domain, or one is a subdomain of the other."""
+    if not a or not b:
+        return False
+    return a == b or a.endswith("." + b) or b.endswith("." + a)
 
 
 def _collect_spoofing_flags(headers: dict) -> list:

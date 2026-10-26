@@ -1,0 +1,4 @@
+# Development / test dependencies (runtime deps + test runner).
+-r requirements.txt
+
+pytest>=9.0   # tests/test_smoke.py
